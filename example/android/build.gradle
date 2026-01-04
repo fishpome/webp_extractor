@@ -1,0 +1,85 @@
+buildscript {
+    ext {
+        kotlin_version = '2.1.10'
+        androidxCoreVersion = '1.13.1'
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/central/' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+        maven { url 'https://storage.googleapis.com/download.flutter.io'}
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/flutter/download.flutter.io' }
+
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.5.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        //classpath 'com.google.gms:google-services:4.4.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/central/' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/flutter/download.flutter.io' }
+        maven { url 'https://storage.googleapis.com/download.flutter.io'}
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            // 强制所有依赖使用指定版本
+            force "androidx.core:core:1.13.1"
+            force "androidx.core:core-ktx:1.13.1"
+            force "androidx.core:core-inputmethod:1.0.0"  // 添加这一行
+            force "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24"
+
+            // 排除所有传递依赖中的旧版 core
+            eachDependency { details ->
+                if (details.requested.group == 'androidx.core' &&
+                        details.requested.name.startsWith('core')) {
+                    if (details.requested.name == 'core-inputmethod') {
+                        details.useVersion "1.0.0"
+                    } else {
+                        details.useVersion "1.13.1"
+                    }
+                }
+            }
+        }
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin("com.android.application") ||
+                project.plugins.hasPlugin("com.android.library")) {
+            project.android {
+                compileSdkVersion 35
+                buildToolsVersion "35.0.0"
+            }
+        }
+    }
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+
+
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
